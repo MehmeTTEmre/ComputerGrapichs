@@ -1,1 +1,0 @@
-# Bilgisayar_Grafikleri_Calisma
