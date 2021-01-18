@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <canvas id="gl-canvas" width="900" height="1080" style="float: right;">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+
+    
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+            attribute vec4 vPosition;
+            attribute vec3 vNormal;
+            attribute vec2 vTexCoords;
+
+            varying vec2 fTexCoords;
+            varying vec4 fColor;
+
+            uniform mat4 modelViewMatrix;
+            uniform mat4 projectionMatrix;
+
+            uniform vec4 ambientProduct,diffuseProduct,specularProduct;
+            uniform vec4 lightDirection;
+            uniform float shininess;
+
+            void main()
+            {
+
+                fTexCoords = 0.5 * vTexCoords;
+                vec3 pos = -(modelViewMatrix * vPosition).xyz;
+               
+                vec3 L = normalize(-lightDirection.xyz);
+                vec3 V = normalize(-pos);
+                vec3 H = normalize(L+V);
+
+                vec4 NN = vec4(vNormal,0);
+
+                vec3 N = normalize ((modelViewMatrix * NN).xyz);
+
+                vec4 ambient = ambientProduct;
+
+                float dotLN = dot(L,N);
+                float diffuseCosAngle = max(dotLN,0.0);
+                vec4 diffuse = diffuseCosAngle * diffuseProduct;
+
+                float specularCosAngle = pow(max(dot(N,H),0.0),shininess);
+                vec4 specular = specularCosAngle * specularProduct;
+
+                if(dotLN < 0.0){
+                    specular = vec4(0.0,0.0,0.0,1.0);
+                }
+
+                gl_Position =projectionMatrix * modelViewMatrix * vPosition;
+                fColor = ambient + diffuse + specular;
+
+                fColor.a = 1.0;
+            }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+            precision mediump float;
+            varying vec4 fColor;
+            varying vec2 fTexCoords;
+            uniform sampler2D texMap;
+
+            void main()
+            {
+                gl_FragColor = fColor * texture2D(texMap,fTexCoords);
+            }
+    </script>
+
+    <button id = "XButton" style="margin-top: 250px; width: 100px; height: 50px;">Rotate X</button>
+    <button id = "YButton" style="margin-top: 250px; width: 100px; height: 50px;">Rotate Y</button>
+    <button id = "ZButton" style="margin-top: 250px; width: 100px; height: 50px;">Rotate Z</button>
+    <button id = "Wireframe" style="margin-top: 250px; width: 100px; height: 50px;">Wireframe</button>
+    <button id = "Shaded" style="margin-top: 250px; width: 100px; height: 50px;">Shaded</button>
+    <br></br>
+
+    <label for="number">X Light</label>
+    <input type="range" min="-100" max="100" id="Xlight" value="5"/>
+    <label for="number">Y Light</label>
+    <input type="range" min="-100" max="100" id="Ylight" value="5"/>
+    <label for="number">Z Light</label>
+    <input type="range" min="-100" max="100" id="Zlight" value="5" style="margin-top: 50px;"/>
+
+    <script src="initShaders.js"></script>
+    <script src="MV.js"></script>
+    <script src="deer.js"></script>
+    <script src="webgl-utils.js"></script>
+    <body>
+    </body>
+</html>
